@@ -170,7 +170,7 @@ training_operation = optimizer.minimize(loss_operation)
 #### Result
 I manage to get **97.3%** accuracy on the validation set and **94%** accuracy on the test set.
 
-#### Test Set Pulled From The Web
+#### German traffic signs found on the web
 
 ![alt text][image5]
 
