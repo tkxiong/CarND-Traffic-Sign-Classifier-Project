@@ -2,15 +2,15 @@
 
 The aim of this project was to accurately classify traffic signs from the [German Traffic Signs dataset](http://benchmark.ini.rub.de/?section=gtsrb&subsection=dataset) by means of a convolutional neural network.
 
-**Build a Traffic Sign Recognition Neural Network**
+**Build a Traffic Sign Recognition Project**
 
-Here are the steps I followed:
-* Load the dataset
-* Explore, summarize and visualize the dataset
-* Pre-process, balance and augment the dataset
+The goals / steps of this project are the following:
+* Load the data set (see below for links to the project data set)
+* Explore, summarize and visualize the data set
 * Design, train and test a model architecture
 * Use the model to make predictions on new images
 * Analyze the softmax probabilities of the new images
+* Summarize the results with a written report
 
 You can view my workflow in Traffic_Signs_Classifier.ipynb.
 
@@ -30,83 +30,53 @@ You can view my workflow in Traffic_Signs_Classifier.ipynb.
 ### German Traffic Signs
 ![alt_text][image4]
 
-### Data Set Summary
+### Data Set Summary & Exploration
 Stats are as follows:
-* Number of training examples = 34799
-* Number of vaidation examples = 4410
-* Number of testing examples = 12630
+* No. of training images = 34799
+* No. of vaidation images = 4410
+* No. of testing images = 12630
 * Image data shape = (32, 32, 3)
 * Number of classes = 43
 
 ### Visualisation of dataset
-The German Traffic Signs dataset is visualised in the below histogram. It is split into 43 categories, with the number of images in each category on the y-axis. Note the extremely unequal distribution of the dataset. This can and will introduce bias into the training model, and will be addressed below. Also, a low of ~200 examples for some classes is simply too low, and will need to be augmented.
+The German Traffic Signs dataset is visualised in the below histogram. There are 43 categories of traffic sign.
 
 ![alt_text][image1]
 
-#### Data Preparation and Pre-processing
+#### Dataset pre-processing
 
+#### 1. Grayscaling
+Convert RGB image to single layer grayscale image
 
-While the data can indeed simply be inserted into the model to begin training as-is, it would be to our benefit to process the data as follows:
+#### 2. Equalisation
+skimage's adaptive CLAHE implementation. It improve constrast and provide more detail edges.
 
-##### 1. Grayscaling
-Grayscaling reduces the image to a single layer instead of 3 RGB channels, drastically reducing the number of variables the network has to deal with. This results in vastly improved processing times. While loss of information due to loss of colour could be a concern, my tests with both RGB and BW images show no significant difference in performance.
+#### 3. Normalisation
+Normalisation scale pixel value from (0, 255) to (-1, 1).
 
-##### 2. Equalisation
-Equalisation of the image helps improve contrast and provides clearer, more well-defined edges. I initially used OpenCV's histogram equalisation, but found the results to be blurry and of poor contrast. skimage's adaptive CLAHE implementation took longer to process, but gave a far superior result.
+#### 4. Augmentation (Transformation)
+Images rotation
 
-##### 3. Normalisation
-Normalisation involves scaling the image's intensity range from (0, 255) to (-1, 1). Smaller values with means about 0 prevent our gradients from going out of control and finding incorrect local minima.
+#### 5. Shuffling
+Shuffles the dataset 
 
-##### 4. Augmentation (Transformation)
-Due to the low number of examples from some classes, I've chosen to re-balance the dataset to prevent bias in the mode. There after, I tripled the size of the dataset over all classes, including the ones already heavily represented. I initially attempted penalised classification to make up for the dataset imbalance, but found good ol' data augmentation more effective.
-
-##### 5. Shuffling
-Rather self-explanatory - shuffles the dataset around so that the model doesn't train itself on the ORDER of the images instead of the features.
-
-#### Visualisation of the Pre-processing Steps
-
-![alt text][image3]
-
-#### Grayscaling, Equalisation and Normalisation
-My batch preprocess function is as follows. I began with conversion to grayscale, contrast limited adaptive histogram equalisation and normalisation from -1 to 1.
-
-I initially used OpenCV's histogram equalisation, but found skimage's CLAHE implementation gave a much better result with more defined edges.
-```python
-from skimage import exposure
-from sklearn.utils import shuffle
-from skimage import exposure
-import cv2
-
-def batchPreprocess(X):
-    X_norm = []
-    for image in X:
-            bw = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-            equ = exposure.equalize_adapthist(bw)
-            equ = (equ * 2.0/equ.max())
-            equ = np.reshape(equ,(32,32,1))-1
-            X_norm.append(equ)
-    return np.array(X_norm)
-```
-
-#### Augmentation (Transformation)
-Here, I employed rotation (within a certain degree range) and warping through projective transforms (skimage). Projective transforms were chosen due to their similarity to changes in camera perspective.
-
-Credits to Alex for helping me figure out projective transforms! His code and write-up helped clarify the frankly rather confusing usage of skimage projective transforms. His blog here(https://navoshta.com/traffic-signs-classification/).
+I use rotation (within a certain degree range) and warping through projective transforms (skimage).
+Credits to Alex for sharing his code and ideas! His blog [here](http://navoshta.com/).
 
 ```python
 from skimage.transform import ProjectiveTransform
 from skimage.transform import rotate
 from skimage.transform import warp
 
-def randomTransform(image, intensity):
+def randTransform(img, intensity):
     
     # Rotate image within a set range, amplified by intensity of overall transform.
     rotation = 20 * intensity
     # print(image.shape)
-    rotated = rotate(image, np.random.uniform(-rotation,rotation), mode = 'edge')
+    rotated = rotate(img, np.random.uniform(-rotation,rotation), mode = 'edge')
     
     # Projection transform on image, amplified by intensity.
-    image_size = image.shape[0]
+    image_size = img.shape[0]
     magnitude = image_size * 0.3 * intensity
     tl_top = np.random.uniform(-magnitude, magnitude)     # Top left corner, top margin
     tl_left = np.random.uniform(-magnitude, magnitude)    # Top left corner, left margin
@@ -132,12 +102,12 @@ def randomTransform(image, intensity):
     transformed = warp(rotated, transform, output_shape = (image_size, image_size), order = 1, mode = 'edge')
     return transformed
 
-def batchAugment(X, y, multiplier = 2):
+def augmentDataset(X, y, multiplier = 2):
     X_train_aug = []
     y_train_aug = []
     for i in range(len(X)):
         for j in range(multiplier):
-            augmented = randomTransform(X[i], 0.75)
+            augmented = randTransform(X[i], 0.75)
             X_train_aug.append(augmented)
             y_train_aug.append(y[i])
         X_train_aug.append(X[i])
@@ -146,7 +116,7 @@ def batchAugment(X, y, multiplier = 2):
     X_train_aug, y_train_aug = shuffle(X_train_aug, y_train_aug)
     print("New augmented size is: ", len(X_train_aug))
     return X_train_aug, y_train_aug
-    
+
 def findIndexofSameClass(y, v):
     index = []
     for i in range(len(y)):
@@ -154,26 +124,13 @@ def findIndexofSameClass(y, v):
             index.append(i)
     return index
 ```
-Here's a histogram of the new distribution.
 
-![alt text][image2]
+#### Image pre-processing steps
 
-Total size of 106226 images
+![alt text][image3]
 
-```python
-# Double the dataset size by rotation and transformation
-X_train_aug, y_train_aug = batchAugment(X_train_aug, y_train_aug, 1)
-y_train_aug = np.array(y_train_aug)
-
-print("Augmentation complete!")
-```
-Output:
-```
-New augmented size is:  212452
-Augmentation complete!
-```
 ### Final Model Architecture
-I modified the LeNet-5 architecture. Only major changes made to this model were the output shape (43 classes instead of 10) and the network parameters.
+I modified the LeNet-5 architecture. Dropout is implemented to improve the validation accuracy.
 
 | Layer         		|     Description	        					| 
 |:---------------------:|:---------------------------------------------:| 
