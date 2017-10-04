@@ -168,15 +168,15 @@ optimizer = tf.train.AdamOptimizer(learning_rate = rate)
 training_operation = optimizer.minimize(loss_operation)
 ```
 #### Result
-I manage to get **97.3%** accuracy on the validation set and **94%** accuracy on the test set.
+I manage to get **96.8%** accuracy on the validation set and **93.9%** accuracy on the test set.
 
 #### German traffic signs found on the web
 
 ![alt text][image5]
 
-Manage to get 6 out of 6 correct.
+Manage to get 5 out of 6 correct.
 ```
-Test Accuracy = 1.000
+Test Accuracy = 0.833
 ```
 
 Here are the results of the prediction:
@@ -189,4 +189,4 @@ Here are the results of the prediction:
 ![alt text][image11]
 
 ### Conclusion
-Althought the test accuracy is **94.0%**, it manage to predict correctly 6 out of 6 images pulled from the web. There is too many hyper paramaters to tune. It need to take a lot of time to train the data. It is a time consuming project and I learn a lot of this project.  
+Althought the test accuracy is **93.9%**, it manage to predict correctly 5 out of 6 images pulled from the web. There is too many hyper paramaters to tune. It need to take a lot of time to train the data. It is a time consuming project and I learn a lot of this project.  
