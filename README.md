@@ -167,8 +167,42 @@ loss_operation = tf.reduce_mean(cross_entropy)
 optimizer = tf.train.AdamOptimizer(learning_rate = rate)
 training_operation = optimizer.minimize(loss_operation)
 ```
+#### Training Record
+1. 96.55 %
+    - Preprocessing: Grayscale, Transformation and normalization
+    - Model: Original LeNet-5, batch size: 128, epochs: 200, rate: 0.001, mu:0, signma: 0.1
+2. 96.8 %
+    - Preprocessing: Grayscale, Transformation and normalization
+    - Model: Original LeNet-5, batch size: 128, epochs: 200, rate: 0.0009, mu:0, signma: 0.1
+    - Dropout: Layer 3 = 0.5 and Layer 4 = 0.5
+    - After implemented dropout, there is a 0.25% increase in validation accuracy
+3. 97.2 %
+    - Preprocessing: Grayscale, Transformation and normalization
+    - Model: Original LeNet-5, batch size: 128, epochs: 200, rate: 0.0009, mu:0, signma: 0.1
+    - Dropout: Layer 1 = 0.9, Layer 2 = 0.8, Layer 3 = 0.7, Layer 4 = 0.5
+    - More layers of dropout are implemented, there is a 0.4% increase in validation accuracy
+    
+_Which architecture did you start out with?_
+
+    - I started with the original LeNet-5 model architecture.
+
+_How did you transition to the final architecture?_
+    
+    - After I implemented dropout into LeNet-5 model, there is a significant increase in validation accuracy.
+    
+_Which parameters did you tune in the original architecture?_
+    
+    - Learning rate
+    - Dropout rate
+    - Epochs
+    - Batch size
+    
+_Why do you think that convolution neural networks are best suited for this traffic sign identification problem?_
+    
+    - CNN is good for classifying images. It will break the image into smaller parts and learns all the features on its own. We do not need to program the CNN with information about specific features to look for.
+
 #### Result
-I manage to get **96.8%** accuracy on the validation set and **93.9%** accuracy on the test set.
+I manage to get **97.2%** accuracy on the validation set and **93.9%** accuracy on the test set.
 
 #### German traffic signs found on the web
 
@@ -179,6 +213,7 @@ Manage to get 5 out of 6 correct.
 Test Accuracy = 0.833
 ```
 
+#### Softmax result
 Here are the results of the prediction:
 
 ![alt text][image6]
@@ -187,6 +222,8 @@ Here are the results of the prediction:
 ![alt text][image9]
 ![alt text][image10]
 ![alt text][image11]
+
+Based on the prediction result, "Road work" (sign number 25) and "Right-of-way at the next intersection" (sign number 11) have softmax probability less than 90%. They have the common characteristic where its main detail is at the center of the triangle sign. From the "Road work" result, after preprocessing of raw image we can see that the feature in the center is distorted. The feature in the center is quite small. I need to find ways to enchance the feature in the center of the triangle sign.
 
 ### Conclusion
 Althought the test accuracy is **93.9%**, it manage to predict correctly 5 out of 6 images pulled from the web. There is too many hyper paramaters to tune. It need to take a lot of time to train the data. It is a time consuming project and I learn a lot of this project.  
